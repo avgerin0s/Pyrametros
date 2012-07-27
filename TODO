@@ -1,1 +1,3 @@
 * Respect deliminer indentation in cfile
+* Add a setup.py
+* Actual documentation in README
