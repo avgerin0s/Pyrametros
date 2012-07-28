@@ -20,6 +20,7 @@ setup(
     packages=['pyrametros', 'pyrametros.examples'],
     long_description=read('README.md'),
     classifiers=[
-        "License :: GPL",
+        "Programming Language :: Python :: 2.7",
+	"License :: OSI Approved :: GNU General Public License v2 (GPLv2)"
     ],
 )
