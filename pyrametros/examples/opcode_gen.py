@@ -121,7 +121,7 @@ def opcodeStructFactory(filename):
 
 if __name__ == "__main__":
     from sys import argv
-    if len(argv) < 1:
+    if len(argv) < 2:
         print "Please provide a filename for the ascii table"
     else:
         for i in opcodeStructFactory(argv[1]): print i
