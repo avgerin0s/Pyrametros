@@ -5,10 +5,8 @@ the way to read an ascii table
 We have a class to represent the opcode struct literal as binutils
 understands it. The class reads a line and draws information from
 there. Then we have a factory function to create the struct."""
-import sys
-sys.path.append("../../")
 
-from  Pyrametros.parser import Row, parse_file
+from  pyrametros import Row, parse_file
 import re
 
 # add to opcodes[] in scavenger.h
