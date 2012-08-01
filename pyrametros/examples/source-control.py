@@ -14,7 +14,7 @@ for i in grid[1:]:
     dictionary = Row(grid[0],i)
 
     # Put a line in the file
-    f.push_line(dictionary['opcode']+",\n")
+    f.push_line(dictionary['opcode']+"_opcode,\n")
 
 # Dont forget to flush
 f.flush()
