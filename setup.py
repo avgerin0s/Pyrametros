@@ -10,7 +10,7 @@ def read(fname):
 
 setup(
     name = "Pyrametros",
-    version = "0.6",
+    version = "0.7",
     author = "Chris Perivolaropoulos",
     author_email = "darksaga2006@gmail.com",
     description = ("A way to use ascii tables to automatically generate code."),
