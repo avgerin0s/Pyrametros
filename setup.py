@@ -20,7 +20,7 @@ setup(
     packages=['pyrametros', 'pyrametros.examples', 'pyrametros.test'],
     install_requires=['nose'],
     long_description=read('README.md'),
-    test_suite='pyrametros.test'
+    test_suite='pyrametros.test',
     classifiers=[
         "Programming Language :: Python :: 2.7",
 	"License :: OSI Approved :: GNU General Public License v2 (GPLv2)"
