@@ -18,9 +18,7 @@ setup(
     keywords = "paramtetric source code table",
     url = "http://packages.python.org/Pyrmetros",
     packages=['pyrametros', 'pyrametros.examples', 'pyrametros.test'],
-    install_requires= [
-        'nose'
-        ]
+    install_requires=['nose'],
     long_description=read('README.md'),
     test_suite='pyrametros.test'
     classifiers=[
