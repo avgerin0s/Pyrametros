@@ -10,15 +10,19 @@ def read(fname):
 
 setup(
     name = "Pyrametros",
-    version = "0.7",
+    version = "0.7.5",
     author = "Chris Perivolaropoulos",
     author_email = "darksaga2006@gmail.com",
     description = ("A way to use ascii tables to automatically generate code."),
     license = "GPL",
     keywords = "paramtetric source code table",
     url = "http://packages.python.org/Pyrmetros",
-    packages=['pyrametros', 'pyrametros.examples'],
+    packages=['pyrametros', 'pyrametros.examples', 'pyrametros.test'],
+    install_requires= [
+        'nose'
+        ]
     long_description=read('README.md'),
+    test_suite='pyrametros.test'
     classifiers=[
         "Programming Language :: Python :: 2.7",
 	"License :: OSI Approved :: GNU General Public License v2 (GPLv2)"

@@ -17,41 +17,64 @@ class Line(object):
     """Just a line aware of it's header, it is able to merge
     """
 
-    def __init__(self, string, head, separator, line = 0):
-        self._string = string
-        self._head = head
-        self._separator = separator
+    def __init__(self, string, parser):
+        """Try to use head to parse string into cells of a row and
+        then put them into _row which you can retrieve form
+        to_list. If head is None then we read solely based on the
+        string provided. You can provide your own separator and the
+        number (the line number is only used for debug messages)"""
+        self._line = parser.linum
+        self._head = None
+        self._separator = parser.separator
+        self._string = self._strip_edge_separators(string)
+        self._row = self._string.split(self._separator)
+        if parser.head is None:
+            self._head = ['']
+        else:
+           self._head = parser.head.to_list()
 
-        self._row = string.split(separator)
 
-        self._line = line
-        if not separator in string:
-            self._row = ['']*len(head)
+        if not self._separator in string:
+            self._row = ['']*len(self._head)
             return
 
-        if len(self._row) > len(head):
-            self._sanitize()
-        if len(self._row) < len(head):
-            raise Exception("Too few cells on line %d (expected %d, got %d)" % (self._line, len(head), len(self._row)))
 
-        # Spaces are important for spacing
+        if len(self._row) > len(self._head) and self._head != ['']:
+            self._sanitize()
+        if len(self._row) < len(self._head):
+            raise Exception("Too few cells on line %d (expected %d, got %d)" % (self._line, len(self._head), len(self._row)))
+
+        # Spaces are important for spacing :P
         self._row = map(self.clean_spaces, self._row)
+
+    def _strip_edge_separators(self, string):
+        """If after any leadingor trailing spaces there are separators
+        remove both spaces and separators"""
+        if string.rstrip()[-1] == self._separator:
+            string = string.rstrip()[:-1]
+
+        if string.strip()[0] == self._separator:
+            string = string.strip()[1:]
+
+        return string
 
     def _sanitize(self):
         """Try given the separator-based split self._rows to merge to
         get the same number of cells as head based on the cell size"""
-        ri = hi = 0
-        while ri < len(self._row) - 1:
+
+
+        row_i = head_i = 0
+        while row_i < len(self._row) - 1:
             if len(self._row) <= len(self._head):
                 break
 
             # While merging cells helps preserve the cell size
-            while len(self._row[ri]) < len(self._head[hi]) and abs(len(self._row[ri]) + len(self._row[ri+1]) - len(self._head[hi])) < abs(len(self._row[ri]) - len(self._head[hi])):
-                self._row[ri] += self._separator + self._row[ri+1]
-                del self._row[ri+1]
+            while len(self._row[row_i]) < len(self._head[head_i]) and abs(len(self._row[row_i]) + len(self._row[row_i+1]) - len(self._head[head_i])) < abs(len(self._row[row_i]) - len(self._head[head_i])):
+                self._row[row_i] += self._separator + self._row[row_i+1]
+                del self._row[row_i+1]
 
-            ri+=1
-            hi+=1
+            row_i+=1
+            head_i+=1
 
     def clean_spaces(self, s):
         """Remove spaces from string in the front and back"""
@@ -70,8 +93,6 @@ class Line(object):
                     return x
                 return x+join_char+y
 
-
-
             self._row = map(smart_concat, self._row, l._row)
 
     def empty_line(self):
@@ -83,7 +104,10 @@ class Line(object):
         return True
 
     def standalone(self):
-        """A standalone row is a row that is not the continuation of it's above"""
+        """A standalone row is a row that is not the continuation of
+        it's above and that is if it's first field is empty. Note that
+        that includes lines that are completely empty and invalid
+        lines (that are converted to completely empty."""
         return bool(self._row[0])
 
     def __len__(self):
@@ -100,43 +124,86 @@ class Line(object):
         then."""
         return self._row
 
-def parse_file(filename, sep = '|'):
-    """Returns a list of lists with the cells of a table separated by
-    separator. The header line is separated from the rest with an
-    empty_line. Lines that are not standalone are merged with the
-    previous line.  See Line class for more info on parameters."""
-    f = open(filename, 'r')
-    lines = f.readlines()
+    def __nonzero__(self):
+        for i in self._row:
+            if i != '':
+                return True
+        return False
 
-    head = lines[0].split(sep)
-    rrows = [Line(s[1], head, sep, s[0]) for s in enumerate(lines)]
+class Parser(object):
 
-    # Create header line in head_rows[0]
-    head_rows = [i for i in takewhile(lambda x:not x.empty_line(), rrows)]
-    head_rows[0].merge(head_rows[1:], "")
+    def __init__(self, filename, sep = '|'):
+        """Returns a list of lists with the cells of a table separated by
+        separator. The header line is separated from the rest with an
+        empty_line. Lines that are not standalone are merged with the
+        previous line.  See Line class for more info on parameters."""
+        self.separator = sep
+        self.linum = 1
+        self.head = None
 
-    rows = [head_rows[0].to_list()]
-    leader = None
-    for i in dropwhile(lambda x: not x.standalone(), rrows[len(head_rows):]):
-        if not i.standalone():
-            leader.merge([i])
+        f = open(filename, 'r')
+        itf = iter(f.readlines())
+
+        # Parse header
+        while not self.head:
+            self.linum+=1
+            try:
+                self.head = None
+                tmp = itf.next()
+                self.head = Line(tmp, self)
+            except StopIteration:
+                raise Exception("No table found in file '%s'" % filename)
+
+        # Parse rows
+        rrows = []
+        for s in itf:
+            self.linum += 1
+            rrows.append(Line(s, self))
+
+        # Merge until the separator, note that this consumes the separator aswell
+        cursor = iter(rrows)
+        self.head.merge([i for i in takewhile(lambda (x): bool(x), cursor)])
+        self.lines = []
+        for i in cursor:
+            self.consume_line(i)
+
+        if len(self.lines) == 0:
+            print "W: Found just one line  of table"
+            return
+
+        if not self.lines[0]:
+            del self.lines[0]
+
+        assert self.lines[0].standalone()
+
+    def consume_line(self, line):
+        """If the line is a continuation then merge it with the last
+        encountered line. If not merge it with the last one ok."""
+        if not line.standalone() and len(self.lines):
+            self.lines[-1].merge([line])
         else:
-            if leader != None:
-                rows+=[leader.to_list()]
-            leader = i
+            self.lines.append(line)
 
-    return rows+[leader.to_list()]
+    @property
+    def rows(self):
+        """List of rows."""
+        return [Row(self.head.to_list(), i.to_list()) for i in self.lines]
+
 
 class Row(dict):
     """Use this class to obtain a dict of the row with the column names as keys"""
     def __init__(self, headers, cells):
         self._headers = map(self._strip_numbers, headers)
-        for i,c in zip(self._headers,cells):
+        for i,c in zip(self._headers, cells):
             self[i] = c
 
     def _strip_numbers(self, cell):
         return re.sub("\d", "", cell)
 
+
+def parse_file(filename):
+    """For backwards compatibility basically"""
+    return Parser(filename).rows
 
 if __name__ == "__main__":
     from sys import argv, exit
