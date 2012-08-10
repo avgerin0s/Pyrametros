@@ -204,7 +204,7 @@ def opcodeStructFactory(filename):
     """Create a list of opcode struct as presented in the table in filename (deliminer = '|')"""
     table = parse_file(filename)
     head = table[0]
-    return [OpcodeStruct(Row(head, i)) for i in table[1:]]
+    return [OpcodeStruct(i) for i in table[1:]]
 
 
 if __name__ == "__main__":

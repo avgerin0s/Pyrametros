@@ -1,9 +1,9 @@
- MAJOR|                    | MINOR|         |             |                                         |               |  |  |  |    |
+ MAJOR|bitfield            | MINOR|         |             |                                         |               |  |  |  |    |
 332222|22222211111111110000|000000|         |             |                                         |               |  |  |  |    |
 109876|54321098765432109876|543210|opcode   | syntax      | integer verilog                         | float verilog |IW|FW|MW|JUMP|
 ------+--------------------+------+---------+-------------+-----------------------------------------+---------------+--+--+--+----+-
-     0|xxxxxtttttdddddiiiii|     0|sll      | rd,rs,imm   | RD = RT << imm                          |               | 1| 0| 0|   0|
-     0|xxxxxtttttdddddiiiii|     3|sra      | rd,rs,imm   | RD = $signed(RT) >>> imm                |               | 1| 0| 0|   0|
+     0|xxxxxtttttdddddiiiii|     0|sll      | rd,rt,imm   | RD = RT << imm                          |               | 1| 0| 0|   0|
+     0|xxxxxtttttdddddiiiii|     3|sra      | rd,rt,imm   | RD = $signed(RT) >>> imm                |               | 1| 0| 0|   0|
      0|sssssxxxxxxxxxxxxxxx|     8|jr       | rs          | New_PC = RS                             |               | 0| 0| 0|   1|
      0|ssssstttttdddddxxxxx|    33|addu     | rd,rs,rt    | RD = RS + RT                            |               | 1| 0| 0|   0|
      0|ssssstttttdddddxxxxx|    35|subu     | rd,rs,rt    | RD = RS - RT                            |               | 1| 0| 0|   0|
@@ -18,8 +18,8 @@
      3|iiiiiiiiiiiiiiiiiiii|iiiiii|jal      | Imm26       | New_PC={EX_PC[31:28],Imm26,2'd0}        |               | 0| 0| 0|   1|
       |                    |      |         |             | $31 = PC+8                              |               |  |  |  |    |
 ------+--------------------+------+---------+-------------+-----------------------------------------+---------------+--+--+--+----+-
-     4|ssssstttttiiiiiiiiii|iiiiii|beq      | Imm16       | New_PC = (RS==RT) ? PC+Imm16+4          |               | 0| 0| 0|   1|
-     5|ssssstttttiiiiiiiiii|iiiiii|bneq     | Imm16       | New_PC = (RS!=RT) ? PC+Imm16+4          |               | 0| 0| 0|   1|
+     4|xxxxxxxxxxiiiiiiiiii|iiiiii|beq      | Imm16       | New_PC = (RS==RT) ? PC+Imm16+4          |               | 0| 0| 0|   1|
+     5|xxxxxxxxxxiiiiiiiiii|iiiiii|bneq     | Imm16       | New_PC = (RS!=RT) ? PC+Imm16+4          |               | 0| 0| 0|   1|
      9|ssssstttttiiiiiiiiii|iiiiii|addiu    | rt,rs,Imm16 | RT = RS + Imm16                         |               | 1| 0| 0|   0|
     10|ssssstttttiiiiiiiiii|iiiiii|slti     | rt,rs,Imm16 | RT = ($signed(RS) < $signed(Imm16))     |               | 1| 0| 0|   0|
     11|ssssstttttiiiiiiiiii|iiiiii|sltiu    | rt,rs,Imm16 | RT = ($unsigned(RS) < $unsigned(Imm16)) |               | 1| 0| 0|   0|

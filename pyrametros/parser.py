@@ -17,16 +17,23 @@ class Line(object):
     """Just a line aware of it's header, it is able to merge
     """
 
-    def __init__(self, string, parser):
+    def __init__(self, string, parser, force_edges=(None,None)):
         """Try to use head to parse string into cells of a row and
         then put them into _row which you can retrieve form
         to_list. If head is None then we read solely based on the
         string provided. You can provide your own separator and the
-        number (the line number is only used for debug messages)"""
+        number (the line number is only used for debug messages).
+
+        Force_lead and force trail configure wether the line has a
+        beginning and ending separator. If None the line tries to
+        figure them out. It fails if there is no leading separator and
+        the line is a continuation so in that case these must be set"""
         self._line = parser.linum
         self._head = None
+
+        self._sep_lead,self._sep_trail = force_edges
         self._separator = parser.separator
-        self._string = self._strip_edge_separators(string)
+        self._string = self._strip_edge_separators(string, self._sep_lead, self._sep_trail)
         self._row = self._string.split(self._separator)
         if parser.head is None:
             self._head = ['']
@@ -44,19 +51,35 @@ class Line(object):
         if len(self._row) < len(self._head):
             raise Exception("Too few cells on line %d (expected %d, got %d)" % (self._line, len(self._head), len(self._row)))
 
-        # Spaces are important for spacing :P
+        # XXX: Spaces can help determine where the cells are if things
+        # are getting hazy. We may want to clear them later on.
         self._row = map(self.clean_spaces, self._row)
 
-    def _strip_edge_separators(self, string):
+    def _strip_edge_separators(self, string, lead=None, trail=None):
         """If after any leadingor trailing spaces there are separators
         remove both spaces and separators"""
-        if string.rstrip()[-1] == self._separator:
-            string = string.rstrip()[:-1]
 
-        if string.strip()[0] == self._separator:
+        # if we are free to choose or if we are forced
+        if (string.rstrip()[-1] == self._separator and trail is None) or trail == True:
+            string = string.rstrip()[:-1]
+            self._sep_trail = True
+        else:
+            self._sep_trail = False
+
+        # if we are free to choose or if we are forced
+        if (string.strip()[0] == self._separator and lead is None) or lead == True:
             string = string.strip()[1:]
+            self._sep_lead = True
+        else:
+            self._sep_lead = False
 
         return string
+
+    @property
+    def edge_separators(self):
+        """A touple of bools lead,trail on wether we omited a
+        leading/trailing separator"""
+        return self._sep_lead, self._sep_trail
 
     def _sanitize(self):
         """Try given the separator-based split self._rows to merge to
@@ -132,13 +155,15 @@ class Line(object):
 
 class Parser(object):
 
-    def __init__(self, filename, sep = '|'):
+    def __init__(self, filename, sep = '|', single_line_header=True):
         """Returns a list of lists with the cells of a table separated by
         separator. The header line is separated from the rest with an
         empty_line. Lines that are not standalone are merged with the
-        previous line.  See Line class for more info on parameters."""
+        previous line.  See Line class for more info on parameters.
+
+        single_line_header removes newlines from multiline headers"""
         self.separator = sep
-        self.linum = 1
+        self.linum = 0
         self.head = None
 
         f = open(filename, 'r')
@@ -158,11 +183,11 @@ class Parser(object):
         rrows = []
         for s in itf:
             self.linum += 1
-            rrows.append(Line(s, self))
+            rrows.append(Line(s, self, self.head.edge_separators))
 
         # Merge until the separator, note that this consumes the separator aswell
         cursor = iter(rrows)
-        self.head.merge([i for i in takewhile(lambda (x): bool(x), cursor)])
+        self.head.merge([i for i in takewhile(lambda (x): bool(x), cursor)], "")
         self.lines = []
         for i in cursor:
             self.consume_line(i)
@@ -191,14 +216,15 @@ class Parser(object):
 
 
 class Row(dict):
-    """Use this class to obtain a dict of the row with the column names as keys"""
+    """Use this class to obtain a dict of the row with the column
+    names as keys. It also makes the values a bit mor human."""
     def __init__(self, headers, cells):
         self._headers = map(self._strip_numbers, headers)
         for i,c in zip(self._headers, cells):
             self[i] = c
 
     def _strip_numbers(self, cell):
-        return re.sub("\d", "", cell)
+        return re.sub("\d", "", cell).strip().rstrip()
 
 
 def parse_file(filename):

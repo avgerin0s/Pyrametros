@@ -1,3 +1,7 @@
 * Respect deliminer indentation in cfile
-* Add a setup.py
 * Actual documentation in README
+* add tests for
+** line numbers in error messages
+** line continuation
+** blanks before header
+** reactions to errors
