@@ -17,7 +17,7 @@ class Line(object):
     """Just a line aware of it's header, it is able to merge
     """
 
-    def __init__(self, string, parser, force_edges=(None,None)):
+    def __init__(self, string, parser, line_setup=dict(force_edges=(None,None))):
         """Try to use head to parse string into cells of a row and
         then put them into _row which you can retrieve form
         to_list. If head is None then we read solely based on the
@@ -28,36 +28,28 @@ class Line(object):
         beginning and ending separator. If None the line tries to
         figure them out. It fails if there is no leading separator and
         the line is a continuation so in that case these must be set"""
+
+        # No processing
         self._line = parser.linum
         self._head = None
-
-        self._sep_lead,self._sep_trail = force_edges
+        self._sep_lead,self._sep_trail = line_setup['force_edges']
         self._separator = parser.separator
+
+        # Some processing
         self._string = self._strip_edge_separators(string, self._sep_lead, self._sep_trail)
-        self._row = self._string.split(self._separator)
+        self._row = self.split_cells(self._string, line_setup)
+
+        # Get an idea of what your header is
         if parser.head is None:
             self._head = ['']
         else:
            self._head = parser.head.to_list()
 
-
-        if not self._separator in string:
-            self._row = ['']*len(self._head)
-            return
-
-
-        if len(self._row) > len(self._head) and self._head != ['']:
-            self._sanitize()
-        if len(self._row) < len(self._head):
-            raise Exception("Too few cells on line %d (expected %d, got %d)" % (self._line, len(self._head), len(self._row)))
-
-        # XXX: Spaces can help determine where the cells are if things
-        # are getting hazy. We may want to clear them later on.
-        self._row = map(self.clean_spaces, self._row)
-
     def _strip_edge_separators(self, string, lead=None, trail=None):
         """If after any leadingor trailing spaces there are separators
         remove both spaces and separators"""
+        if not string.rstrip():
+            return ""
 
         # if we are free to choose or if we are forced
         if (string.rstrip()[-1] == self._separator and trail is None) or trail == True:
@@ -75,6 +67,24 @@ class Line(object):
 
         return string
 
+    def split_cells(self, string, line_setup):
+        """Split cells froma a string intelligently, see where the
+        separators should be and split as close as possible to that
+        """
+        if "separators" not in line_setup:
+            return string.split(self.separator)
+
+        ret = []
+        for s in line_setup['separators']:
+
+            for i,j in izip_longest(range(s,0), range(s, len(string))):
+                for k in [i,j]:
+                    if string[k] == separator:
+                        ret.append(string[:k])
+                        del string[:k+1]
+                        continue
+
+        return ret
     @property
     def edge_separators(self):
         """A touple of bools lead,trail on wether we omited a
@@ -84,7 +94,6 @@ class Line(object):
     def _sanitize(self):
         """Try given the separator-based split self._rows to merge to
         get the same number of cells as head based on the cell size"""
-
 
         row_i = head_i = 0
         while row_i < len(self._row) - 1:
@@ -153,6 +162,10 @@ class Line(object):
                 return True
         return False
 
+    @property
+    def separator_postions(self):
+
+
 class Parser(object):
 
     def __init__(self, filename, sep = '|', single_line_header=True):
@@ -179,11 +192,13 @@ class Parser(object):
             except StopIteration:
                 raise Exception("No table found in file '%s'" % filename)
 
+        sep_positions = self.head.separator_positions
+
         # Parse rows
         rrows = []
         for s in itf:
             self.linum += 1
-            rrows.append(Line(s, self, self.head.edge_separators))
+            rrows.append(Line(s, self, dict(force_edges=self.head.edge_separators, separators=sep_positions))
 
         # Merge until the separator, note that this consumes the separator aswell
         cursor = iter(rrows)
