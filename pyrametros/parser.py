@@ -192,13 +192,13 @@ class Parser(object):
             except StopIteration:
                 raise Exception("No table found in file '%s'" % filename)
 
-        sep_positions = self.head.separator_positions
+        line_setup = dict(force_edges=self.head.edge_separators, separators=self.head.separator_positions)
 
         # Parse rows
         rrows = []
         for s in itf:
             self.linum += 1
-            rrows.append(Line(s, self, dict(force_edges=self.head.edge_separators, separators=sep_positions))
+            rrows.append(Line(s, self, line_setup)
 
         # Merge until the separator, note that this consumes the separator aswell
         cursor = iter(rrows)
