@@ -116,7 +116,7 @@ class Line(object):
 
     def clean_spaces(self, s):
         """Remove spaces from string in the front and back"""
-        return s.strip().rstrip()
+        return s.strip()
 
     def merge(self, line_list, join_char = "\n"):
         """Merge the list of lines with this line. Join cells with provided character."""
@@ -129,7 +129,7 @@ class Line(object):
                     return y
                 if not y:
                     return x
-                return x+join_char+y
+                return x.rstrip()+join_char+y.lstrip()
 
             self._row = map(smart_concat, self._row, l._row)
 
@@ -146,7 +146,7 @@ class Line(object):
         it's above and that is if it's first field is empty. Note that
         that includes lines that are completely empty and invalid
         lines (that are converted to completely empty."""
-        return bool(self._row[0])
+        return bool(self._row[0].strip().rstrip())
 
     def __len__(self):
         return len(self._row)

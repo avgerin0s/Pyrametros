@@ -85,10 +85,10 @@ class Row(dict):
         self._headers = map(self._strip_numbers, headers)
         for i,c in zip(self._headers, cells):
             if i:
-                self[i] = c.strip().rstrip()
+                self[i] = c.strip()
 
     def _strip_numbers(self, cell):
-        return re.sub("\d", "", cell).strip().rstrip()
+        return re.sub("\d", "", cell).strip()
 
 
 def parse_file(filename):
