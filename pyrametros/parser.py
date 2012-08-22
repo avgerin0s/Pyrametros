@@ -98,11 +98,18 @@ class Row(dict):
     def validate_columns(self, names):
         """Raise a key error if the row misses a header"""
         for h in names:
-            raise KeyError("Table in %s is missing column named '%s'" % (self.filename, h))
+            if h not in self:
+                raise KeyError("Table in %s is missing column named '%s'" % (self.filename, h))
 
 def parse_file(filename, assert_columns=[]):
     """For backwards compatibility basically"""
-    return Parser(filename).rows
+    rows = Parser(filename).rows
+    for r in rows:
+        r.validate_columns(assert_columns)
+
+    return rows
+
+
 
 
 if __name__ == "__main__":
