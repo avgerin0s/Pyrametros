@@ -24,8 +24,9 @@ class Parser(object):
 
         single_line_header removes newlines from multiline headers
         """
-        line_setup = dict(linum=0, force_edges=(None, None), separator='|')
+        line_setup = dict(linum=0, filename=filename, force_edges=(None, None), separator='|')
         self.head = None
+        self.filename = filename
         itf = iter(open(filename, 'r').readlines())
 
         # Find a header line to use retrieve the line setup
@@ -75,13 +76,17 @@ class Parser(object):
     @property
     def rows(self):
         """List of rows."""
-        return [Row(self.head.to_list, i.to_list) for i in self.lines]
+        return [Row(self.head.to_list, i.to_list, self.filename) for i in self.lines]
 
 
 class Row(dict):
     """Use this class to obtain a dict of the row with the column
-    names as keys. It also removes leading and trailing spaces from cells."""
-    def __init__(self, headers, cells):
+    names as keys. It also removes leading and trailing spaces from cells.
+    """
+
+    def __init__(self, headers, cells, filename=None):
+        """Only headers and cells are rest is for debug purposes"""
+        self.filename = filename
         self._headers = map(self._strip_numbers, headers)
         for i,c in zip(self._headers, cells):
             if i:
@@ -90,10 +95,15 @@ class Row(dict):
     def _strip_numbers(self, cell):
         return re.sub("\d", "", cell).strip()
 
+    def validate_columns(self, names):
+        """Raise a key error if the row misses a header"""
+        for h in names:
+            raise KeyError("Table in %s is missing column named '%s'" % (self.filename, h))
 
-def parse_file(filename):
+def parse_file(filename, assert_columns=[]):
     """For backwards compatibility basically"""
     return Parser(filename).rows
+
 
 if __name__ == "__main__":
     from sys import argv, exit

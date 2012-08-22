@@ -6,9 +6,9 @@ EXPECTED_TABLE = [{'MAJOR': '0', 'op_prop': 'shift', 'integer verilog': 'RD = RT
 
 class TestParser(unittest.TestCase):
     def setUp(self):
-        example_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "./static/")
-        self.isa_rows = parse_file(os.path.join(example_dir, "testtable.txt"))
-        self.org_rows = parse_file(os.path.join(example_dir, "testtable.org"))
+        self.example_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "./static/")
+        self.isa_rows = parse_file(os.path.join(self.example_dir, "testtable.txt"))
+        self.org_rows = parse_file(os.path.join(self.example_dir, "testtable.org"))
 
     def test_isa_table(self):
         for r, expected in zip(self.isa_rows, EXPECTED_TABLE):
@@ -20,6 +20,10 @@ class TestParser(unittest.TestCase):
             for h,c in r.iteritems():
                 self.assertEquals(c, expected[h])
 
+    def test_column_assertion(self):
+        with self.assertRaises(KeyError):
+            for r in self.isa_rows:
+                r.validate_columns(["black_sheep"])
 
 if __name__ == "__main__":
     unittest.main()

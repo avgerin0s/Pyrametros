@@ -9,7 +9,7 @@ class Line(object):
     """Just a line aware of it's header, it is able to merge
     """
 
-    def __init__(self, string, linum=-1, force_edges=(None,None), separator='|', separators=None):
+    def __init__(self, string, linum=-1, filename="<Unknown file>", force_edges=(None,None), separator='|', separators=None):
         """Try to use head to parse string into cells of a row and
         then put them into _row which you can retrieve form
         to_list. If head is None then we read solely based on the
@@ -23,6 +23,7 @@ class Line(object):
         """
         # No processing
         self._line = linum
+        self._filename = filename
         self._sep_lead,self._sep_trail = force_edges
         self._separator = separator
 
@@ -103,7 +104,7 @@ class Line(object):
 
                 if not found:
                     import ipdb; ipdb.set_trace()
-                    raise ValueError("Unable to determine cells correctly in line %d" % self._line)
+                    raise ValueError("Unable to determine cells correctly in %s:%d" % (self._filename, self._line))
 
         # String is now NULL-terminated on the valid separators
         return string.split('\x00')
