@@ -3,9 +3,7 @@
 import shutil
 import re
 
-# This adds C code to a specific file but it might aswell edit any
-# file. You can use this class to edit verilog files aswell. See
-# example code at the end.
+# XXX: make this an context
 
 class CFile:
     """
@@ -16,6 +14,8 @@ class CFile:
     Also keeps backup according to argument backup_format (only format
     argument is the string filename).
 
+    It is safe to delete this at any time. We keep no open files.
+
     Note1: The first occrance of deliminers will be used ONLY. Use
     different tags to edit different parts of the file separately.
 
@@ -25,7 +25,7 @@ class CFile:
     Note3: any changes commited to the file between tha beginning and
     end of a CFile's lifetime will be overwritten
     """
-    def __init__(self, filename, generate_tag, deliminer_string = "/* %(begin_or_end)s generated code: %(tag)s */", begin_id = "Begin", end_id = "End", backup_format = "%s~"):
+    def __init__(self, filename, tag, readonly=False, deliminer_string = "/* %(begin_or_end)s generated code: %(tag)s */", begin_id = "Begin", end_id = "End", backup_format = "%s~"):
         """
         filename:     The filename to edit
 
@@ -48,53 +48,87 @@ class CFile:
         backup_format: the format of the backup file that is
                        automatically kept. Set to None for no backup.
         """
-        if backup_format:
-            shutil.copy(filename, backup_format % filename)
-        else:
-            backup_format = "%s"
 
-        self.backup_file = open(backup_format % filename, "r")
+        self.filename = filename
+        self.readonly = readonly
 
-        self.top_list = []
-        self.mid_list = []
-        self.bottom_list = []
+        if not readonly:
+            if backup_format:
+                shutil.copy(filename, backup_format % filename)
+            else:
+                backup_format = "%s"
 
-        self.pattern = {'begin': deliminer_string % dict(begin_or_end = begin_id, tag = generate_tag), 'end' : deliminer_string % dict(begin_or_end = end_id, tag = generate_tag)}
+        # Break the file lines into lists
+        self.top_list, self.mid_list, self.old_mid_list, self.bottom_list = [], [], [], []
+
+        self.pattern = {'begin': deliminer_string % dict(begin_or_end=begin_id, tag=tag),
+                        'end' : deliminer_string % dict(begin_or_end=end_id, tag=tag)}
 
         checkpoints = iter(['begin', 'end'])
         looking_for = next(checkpoints, None)
-        for i in self.backup_file:
-            if looking_for == 'begin':
-                self.top_list += [i]
 
-            if looking_for and self.pattern[looking_for] in i:
-                looking_for = next(checkpoints, None)
+        with open(filename) as f:
+            for i in f:
+                # Before the region of interest
+                if looking_for == 'begin':
+                    self.top_list.append(i.rstrip())
 
-            if looking_for == None:
-                self.bottom_list += [i]
+                # In the region of interest
+                if looking_for == 'end':
+                    self.old_mid_list.append(i.rstrip())
 
-        self.backup_file.close()
+                # Below the region of interest
+                if looking_for is None:
+                    self.bottom_list.append(i.rstrip())
+
+                # Found what we were looking for
+                if looking_for and self.pattern[looking_for] in i:
+                    looking_for = next(checkpoints, None)
 
         if looking_for:
             raise Exception("Failed to find "+looking_for+" tag: "+self.pattern[looking_for])
 
-        self._filename = filename
+        if self.readonly:
+            self.mid_list = self.old_mid_list
 
     def push_line(self, string):
         """Push line to be written to the file. Nothing is written
         until flush is called. Lines should contain newline
-        characters."""
-        self.mid_list += [string]
+        characters.
+        """
+        self.push_lines([string])
 
     def push_lines(self, lines):
-        """Same as above only accepts a list of lines."""
+        """Push a list of lines into the file."""
+        if self.readonly:
+            raise Exception("Tried to push line in readonly file %s" % self.filename)
+
         self.mid_list += lines
 
+    def search(self, string):
+        """Search the region. return the lines that contains the string."""
+        return [l for l in self.old_mid_list if string in l]
+
+    def contents(self, real=False):
+        """Return the current contents of the region. If real is true
+        then we get the contents of the file right now, if not we get
+        what the file would have after flush. If the file is readonly
+        real has no effect.
+        """
+        if real:
+            return self.old_mid_list
+        else:
+            return self.mid_list
+
     def flush(self):
-        """Flushong also closes the file"""
-        self.file = open(self._filename, 'w')
-        self.file.writelines( [str(i) for i in self.top_list + self.mid_list + self.bottom_list] )
-        self.file.close()
+        """Flushing also closes the file. Has no effect if readonly is on."""
+        if self.readonly:
+            return
+
+        with open(self.filename, 'w') as f:
+            f.writelines( [str(i)+"\n" for i in self.top_list + self.mid_list + self.bottom_list] )
+        self.old_mid_list = self.mid_list
+        self.mid_list = []
 
 if __name__ == "__main__":
     from sys import argv
