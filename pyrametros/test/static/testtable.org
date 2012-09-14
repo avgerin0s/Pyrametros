@@ -1,49 +1,49 @@
 Attention! do not let orgmode format this it will get all confused with the separators in blocks like or (also this messages shouldnt have separators, they cannot be escaped)
 
-| MAJOR|registers           | MINOR|         |             |                                         |               |  |  |  |    |      |      |      |         |
-|332222|22222211111111110000|000000|         |             |                                         |               |  |  |  |    |      |      |      |         |
-|109876|54321098765432109876|543210|opcode   | syntax      | integer verilog                         | float verilog |IW|FW|MW|JUMP| argA | argB | argC | op_prop |
-|------+--------------------+------+---------+-------------+-----------------------------------------+---------------+--+--+--+----+------+------+------+---------|
-|     0|xxxxxtttttdddddiiiii|     0|sll      | rd,rs,imm   | RD = RT << imm                          |               | 1| 0| 0|   0|      |      |      |shift    |
-|     0|xxxxxtttttdddddiiiii|     3|sra      | rd,rs,imm   | RD = $signed(RT) >>> imm                |               | 1| 0| 0|   0|      |      |      |         |
-|     0|sssssxxxxxxxxxxxxxxx|     8|jr       | rs          | New_PC = RS                             |               | 0| 0| 0|   1|      |      |      |         |
-|     0|ssssstttttdddddxxxxx|    33|addu     | rd,rs,rt    | RD = RS + RT                            |               | 1| 0| 0|   0|      |      |      |         |
-|     0|ssssstttttdddddxxxxx|    35|subu     | rd,rs,rt    | RD = RS - RT                            |               | 1| 0| 0|   0|      |      |      |         |
-|     0|ssssstttttdddddxxxxx|    36|and      | rd,rs,rt    | RD = RS & RT                            |               | 1| 0| 0|   0|      |      |      |         |
-|     0|ssssstttttdddddxxxxx|    37|or       | rd,rs,rt    | RD = RS | RT                            |               | 1| 0| 0|   0|      |      |      |         |
-|     0|ssssstttttdddddxxxxx|    38|xor      | rd,rs,rt    | RD = RS ^ RT                            |               | 1| 0| 0|   0|      |      |      |         |
-|     0|ssssstttttdddddxxxxx|    39|nor      | rd,rs,rt    | RD = ~(RS | RT)                         |               | 1| 0| 0|   0|      |      |      |         |
-|     0|ssssstttttdddddxxxxx|    42|slt      | rd,rs,rt    | RD = $signed(RS)<$signed(RT)            |               | 1| 0| 0|   0|      |      |      |         |
-|     0|ssssstttttdddddxxxxx|    43|sltu     | rd,rs,rt    | RD = $unsigned(RS)<$unsigned(RT)        |               | 1| 0| 0|   0|      |      |      |         |
-|------+--------------------+------+---------+-------------+-----------------------------------------+---------------+--+--+--+----+------+------+------+---------|
-|     2|iiiiiiiiiiiiiiiiiiii|iiiiii|j        | Imm26       | New_PC={EX_PC[31:28],Imm26,2'd0}        |               | 0| 0| 0|   1|      |      |      |         |
-|     3|iiiiiiiiiiiiiiiiiiii|iiiiii|jal      | Imm26       | New_PC={EX_PC[31:28],Imm26,2'd0}        |               | 0| 0| 0|   1|      |      |      |         |
-|      |                    |      |         |             | $31 = PC+8                              |               |  |  |  |    |      |      |      |         |
-|------+--------------------+------+---------+-------------+-----------------------------------------+---------------+--+--+--+----+------+------+------+---------|
-|     4|ssssstttttiiiiiiiiii|iiiiii|beq      | Imm16       | New_PC = (RS==RT) ? PC+Imm16+4          |               | 0| 0| 0|   1|      |      |      |         |
-|     5|ssssstttttiiiiiiiiii|iiiiii|bneq     | Imm16       | New_PC = (RS!=RT) ? PC+Imm16+4          |               | 0| 0| 0|   1|      |      |      |         |
-|     9|ssssstttttiiiiiiiiii|iiiiii|addiu    | rt,rs,Imm16 | RT = RS + Imm16                         |               | 1| 0| 0|   0|      |      |      |         |
-|    10|ssssstttttiiiiiiiiii|iiiiii|slti     | rt,rs,Imm16 | RT = ($signed(RS) < $signed(Imm16))     |               | 1| 0| 0|   0|      |      |      |         |
-|    11|ssssstttttiiiiiiiiii|iiiiii|sltiu    | rt,rs,Imm16 | RT = ($unsigned(RS) < $unsigned(Imm16)) |               | 1| 0| 0|   0|      |      |      |         |
-|    12|ssssstttttiiiiiiiiii|iiiiii|andi     | rt,rs,Imm16 | RT = RS & {16'd0,Imm16}                 |               | 1| 0| 0|   0|      |      |      |         |
-|    13|ssssstttttiiiiiiiiii|iiiiii|ori      | rt,rs,Imm16 | RT = RS | {16'd0,Imm16}                 |               | 1| 0| 0|   0|      |      |      |         |
-|    15|xxxxxtttttiiiiiiiiii|iiiiii|lui      | rt,Imm16    | RT = {Imm16,16'd0}                      |               | 1| 0| 0|   0|      |      |      |         |
-|------+--------------------+------+---------+-------------+-----------------------------------------+---------------+--+--+--+---++------+------+------+---------|
-|    28|ssssstttttdddddxxxxx|     2|mul      | rd,rs,rt    | RD = (RS * RT)                          |               | 1| 0| 0|   0|      |      |      |         |
-|    28|ssssstttttdddddxxxxx|    16|tmove    | rd,rs,rt    | RD(Thread:RT) = RS                      |               | 1| 0| 0|   0|      |      |      |         |
-|------+--------------------+------+---------+-------------+-----------------------------------------+---------------+--+--+--+----+------+------+------+---------|
-|    31|ssssstttttdddddxxxxx|     8|fork     | rd,rs,rt    | Fork_Req = 1                            |               | 1| 0| 0|   0|      |      |      |         |
-|    31|sssssxxxxxxxxxxxxxxx|     9|yield    | rs          | Yield    = RS                           |               | 0| 0| 0|   1|      |      |      |         |
-|    31|xxxxxtttttdddddxxxxx|    32|sext     | rd,rt       | RD = sign_ext8(RT)                      |               | 1| 0| 0|   0|      |      |      |         |
-|    31|xxxxxtttttdddddxxxxx|    33|sext     | rd,rt       | RD = sign_ext16(RT)                     |               | 1| 0| 0|   0|      |      |      |         |
-|------+--------------------+------+---------+-------------+-----------------------------------------+---------------+--+--+--+----+------+------+------+---------|
-|    32|ssssstttttiiiiiiiiii|iiiiii|lb       | rt,rs,Imm16 | RT = *$signed(RS)+$signed(Imm16)        |               | 1| 0| 0|   0|      |      |      |         |
-|    33|ssssstttttiiiiiiiiii|iiiiii|lh       | rt,rs,Imm16 | RT = *$signed(RS)+$signed(Imm16)        |               | 1| 0| 0|   0|      |      |      |         |
-|    35|ssssstttttiiiiiiiiii|iiiiii|lw       | rt,rs,Imm16 | RT = *$signed(RS)+$signed(Imm16)        |               | 1| 0| 0|   0|      |      |      |         |
-|    36|ssssstttttiiiiiiiiii|iiiiii|lbu      | rt,rs,Imm16 | RT = *$signed(RS)+$signed(Imm16)        |               | 1| 0| 0|   0|      |      |      |         |
-|    37|ssssstttttiiiiiiiiii|iiiiii|lhu      | rt,rs,Imm16 | RT = *$signed(RS)+$signed(Imm16)        |               | 1| 0| 0|   0|      |      |      |         |
-|------+--------------------+------+---------+-------------+-----------------------------------------+---------------+--+--+--+----+------+------+------+---------|
-|    40|ssssstttttiiiiiiiiii|iiiiii|sb       | rt,rs,Imm16 | *$signed(RS)+$signed(Imm16) = RT[7:0]   |               | 0| 0| 1|   0|      |      |      |         |
-|    41|ssssstttttiiiiiiiiii|iiiiii|sh       | rt,rs,Imm16 | *$signed(RS)+$signed(Imm16) = RT[15:0]  |               | 0| 0| 1|   0|      |      |      |         |
-|    43|ssssstttttiiiiiiiiii|iiiiii|sw       | rt,rs,Imm16 | *$signed(RS)+$signed(Imm16) = RT[31:0]  |               | 0| 0| 1|   0|      |      |      |         |
-|------+--------------------+------+---------+-------------+-----------------------------------------+---------------+--+--+--+----+------+------+------+---------|
+|  MAJOR | registers            |  MINOR |        |             |                                         |               |    |    |    |      |             |        |       |              |   |
+| 332222 | 22222211111111110000 | 000000 |        |             |                                         |               |    |    |    |      |             |        |       |              |   |
+| 109876 | 54321098765432109876 | 543210 | opcode | syntax      | integer verilog                         | float verilog | IW | FW | MW | JUMP |        argA | argB   | argC  | op_prop      |   |
+|--------+----------------------+--------+--------+-------------+-----------------------------------------+---------------+----+----+----+------+-------------+--------+-------+--------------+---|
+|      0 | xxxxxtttttdddddiiiii |      0 | sll    | rd,rs,imm   | RD = RT << imm                          |               |  1 |  0 |  0 |    0 | destination | source | shift | shift        |   |
+|      0 | xxxxxtttttdddddiiiii |      3 | sra    | rd,rs,imm   | RD = $signed(RT) >>> imm                |               |  1 |  0 |  0 |    0 |             |        |       | shift, 64bit |   |
+|      0 | sssssxxxxxxxxxxxxxxx |      8 | jr     | rs          | New_PC = RS                             |               |  0 |  0 |  0 |    1 |             |        |       |              |   |
+|      0 | ssssstttttdddddxxxxx |     33 | addu   | rd,rs,rt    | RD = RS + RT                            |               |  1 |  0 |  0 |    0 |             |        |       |              |   |
+|      0 | ssssstttttdddddxxxxx |     35 | subu   | rd,rs,rt    | RD = RS - RT                            |               |  1 |  0 |  0 |    0 |             |        |       |              |   |
+|      0 | ssssstttttdddddxxxxx |     36 | and    | rd,rs,rt    | RD = RS & RT                            |               |  1 |  0 |  0 |    0 |             |        |       |              |   |
+|      0 | ssssstttttdddddxxxxx |     37 | or     | rd,rs,rt    | RD = RS                                 | RT            |    |  1 |  0 |    0 |           0 |        |       |              |   |
+|      0 | ssssstttttdddddxxxxx |     38 | xor    | rd,rs,rt    | RD = RS ^ RT                            |               |  1 |  0 |  0 |    0 |             |        |       |              |   |
+|      0 | ssssstttttdddddxxxxx |     39 | nor    | rd,rs,rt    | RD = ~(RS                               | RT)           |    |  1 |  0 |    0 |           0 |        |       |              |   |
+|      0 | ssssstttttdddddxxxxx |     42 | slt    | rd,rs,rt    | RD = $signed(RS)<$signed(RT)            |               |  1 |  0 |  0 |    0 |             |        |       |              |   |
+|      0 | ssssstttttdddddxxxxx |     43 | sltu   | rd,rs,rt    | RD = $unsigned(RS)<$unsigned(RT)        |               |  1 |  0 |  0 |    0 |             |        |       |              |   |
+|--------+----------------------+--------+--------+-------------+-----------------------------------------+---------------+----+----+----+------+-------------+--------+-------+--------------+---|
+|      2 | iiiiiiiiiiiiiiiiiiii | iiiiii | j      | Imm26       | New_PC={EX_PC[31:28],Imm26,2'd0}        |               |  0 |  0 |  0 |    1 |             |        |       |              |   |
+|      3 | iiiiiiiiiiiiiiiiiiii | iiiiii | jal    | Imm26       | New_PC={EX_PC[31:28],Imm26,2'd0}        |               |  0 |  0 |  0 |    1 |             |        |       |              |   |
+|        |                      |        |        |             | $31 = PC+8                              |               |    |    |    |      |             |        |       |              |   |
+|--------+----------------------+--------+--------+-------------+-----------------------------------------+---------------+----+----+----+------+-------------+--------+-------+--------------+---|
+|      4 | ssssstttttiiiiiiiiii | iiiiii | beq    | Imm16       | New_PC = (RS==RT) ? PC+Imm16+4          |               |  0 |  0 |  0 |    1 |             |        |       |              |   |
+|      5 | ssssstttttiiiiiiiiii | iiiiii | bneq   | Imm16       | New_PC = (RS!=RT) ? PC+Imm16+4          |               |  0 |  0 |  0 |    1 |             |        |       |              |   |
+|      9 | ssssstttttiiiiiiiiii | iiiiii | addiu  | rt,rs,Imm16 | RT = RS + Imm16                         |               |  1 |  0 |  0 |    0 |             |        |       |              |   |
+|     10 | ssssstttttiiiiiiiiii | iiiiii | slti   | rt,rs,Imm16 | RT = ($signed(RS) < $signed(Imm16))     |               |  1 |  0 |  0 |    0 |             |        |       |              |   |
+|     11 | ssssstttttiiiiiiiiii | iiiiii | sltiu  | rt,rs,Imm16 | RT = ($unsigned(RS) < $unsigned(Imm16)) |               |  1 |  0 |  0 |    0 |             |        |       |              |   |
+|     12 | ssssstttttiiiiiiiiii | iiiiii | andi   | rt,rs,Imm16 | RT = RS & {16'd0,Imm16}                 |               |  1 |  0 |  0 |    0 |             |        |       |              |   |
+|     13 | ssssstttttiiiiiiiiii | iiiiii | ori    | rt,rs,Imm16 | RT = RS                                 | {16'd0,Imm16} |    |  1 |  0 |    0 |           0 |        |       |              |   |
+|     15 | xxxxxtttttiiiiiiiiii | iiiiii | lui    | rt,Imm16    | RT = {Imm16,16'd0}                      |               |  1 |  0 |  0 |    0 |             |        |       |              |   |
+|--------+----------------------+--------+--------+-------------+-----------------------------------------+---------------+----+----+----+------+-------------+--------+-------+--------------+---|
+|     28 | ssssstttttdddddxxxxx |      2 | mul    | rd,rs,rt    | RD = (RS * RT)                          |               |  1 |  0 |  0 |    0 |             |        |       |              |   |
+|     28 | ssssstttttdddddxxxxx |     16 | tmove  | rd,rs,rt    | RD(Thread:RT) = RS                      |               |  1 |  0 |  0 |    0 |             |        |       |              |   |
+|--------+----------------------+--------+--------+-------------+-----------------------------------------+---------------+----+----+----+------+-------------+--------+-------+--------------+---|
+|     31 | ssssstttttdddddxxxxx |      8 | fork   | rd,rs,rt    | Fork_Req = 1                            |               |  1 |  0 |  0 |    0 |             |        |       |              |   |
+|     31 | sssssxxxxxxxxxxxxxxx |      9 | yield  | rs          | Yield    = RS                           |               |  0 |  0 |  0 |    1 |             |        |       |              |   |
+|     31 | xxxxxtttttdddddxxxxx |     32 | sext   | rd,rt       | RD = sign_ext8(RT)                      |               |  1 |  0 |  0 |    0 |             |        |       |              |   |
+|     31 | xxxxxtttttdddddxxxxx |     33 | sext   | rd,rt       | RD = sign_ext16(RT)                     |               |  1 |  0 |  0 |    0 |             |        |       |              |   |
+|--------+----------------------+--------+--------+-------------+-----------------------------------------+---------------+----+----+----+------+-------------+--------+-------+--------------+---|
+|     32 | ssssstttttiiiiiiiiii | iiiiii | lb     | rt,rs,Imm16 | RT = *$signed(RS)+$signed(Imm16)        |               |  1 |  0 |  0 |    0 |             |        |       |              |   |
+|     33 | ssssstttttiiiiiiiiii | iiiiii | lh     | rt,rs,Imm16 | RT = *$signed(RS)+$signed(Imm16)        |               |  1 |  0 |  0 |    0 |             |        |       |              |   |
+|     35 | ssssstttttiiiiiiiiii | iiiiii | lw     | rt,rs,Imm16 | RT = *$signed(RS)+$signed(Imm16)        |               |  1 |  0 |  0 |    0 |             |        |       |              |   |
+|     36 | ssssstttttiiiiiiiiii | iiiiii | lbu    | rt,rs,Imm16 | RT = *$signed(RS)+$signed(Imm16)        |               |  1 |  0 |  0 |    0 |             |        |       |              |   |
+|     37 | ssssstttttiiiiiiiiii | iiiiii | lhu    | rt,rs,Imm16 | RT = *$signed(RS)+$signed(Imm16)        |               |  1 |  0 |  0 |    0 |             |        |       |              |   |
+|--------+----------------------+--------+--------+-------------+-----------------------------------------+---------------+----+----+----+------+-------------+--------+-------+--------------+---|
+|     40 | ssssstttttiiiiiiiiii | iiiiii | sb     | rt,rs,Imm16 | *$signed(RS)+$signed(Imm16) = RT[7:0]   |               |  0 |  0 |  1 |    0 |             |        |       |              |   |
+|     41 | ssssstttttiiiiiiiiii | iiiiii | sh     | rt,rs,Imm16 | *$signed(RS)+$signed(Imm16) = RT[15:0]  |               |  0 |  0 |  1 |    0 |             |        |       |              |   |
+|     43 | ssssstttttiiiiiiiiii | iiiiii | sw     | rt,rs,Imm16 | *$signed(RS)+$signed(Imm16) = RT[31:0]  |               |  0 |  0 |  1 |    0 |             |        |       |              |   |
+|--------+----------------------+--------+--------+-------------+-----------------------------------------+---------------+----+----+----+------+-------------+--------+-------+--------------+---|
