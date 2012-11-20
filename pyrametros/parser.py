@@ -101,6 +101,13 @@ class Row(dict):
             if h not in self:
                 raise KeyError("Table in %s is missing column named '%s'" % (self.filename, h))
 
+    def tags_column(self, column_name):
+        """This indicates that the `column_name' column is actualy a
+        coma separated list of tags and should be turned into a list of tags
+        """
+        self[column_name] = [i.strip() for i in self[column_name].split(',')]
+
+
 def parse_file(filename, assert_columns=[]):
     """For backwards compatibility basically"""
     rows = Parser(filename).rows
