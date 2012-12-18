@@ -103,7 +103,6 @@ class Line(object):
                         pin = True
 
                 if not found:
-                    import ipdb; ipdb.set_trace()
                     raise ValueError("Unable to determine cells correctly in %s:%d" % (self._filename, self._line))
 
         # String is now NULL-terminated on the valid separators
