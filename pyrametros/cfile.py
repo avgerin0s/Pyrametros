@@ -80,6 +80,10 @@ class CFile:
 
         self._filename = filename
 
+    def filling_string(self):
+        """Return the string that will be flushed between the tags."""
+        return '\n'.join([str(i) for i in self.mid_list])
+
     def push_line(self, string):
         """Push line to be written to the file. Nothing is written
         until flush is called. Lines should contain newline
