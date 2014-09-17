@@ -1,6 +1,6 @@
 # Pyrametros #
 
-This library allows you to generate code given tha parameters read from an ascii table.
+This library allows you to generate code given the parameters read from an ascii table.
 
 ## Usage ##
 
